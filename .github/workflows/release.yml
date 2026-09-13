@@ -85,11 +85,9 @@ jobs:
 
             ### Asset Rilis:
             - **Debian / Ubuntu**: `WhatsPulse___VERSION___amd64.deb`
-            - **AppImage (Universal Linux)**: `WhatsPulse___VERSION___amd64.AppImage`
 
             ### Cara Install & Menjalankan:
-            - **Debian**: `sudo dpkg -i WhatsPulse___VERSION___amd64.deb`
-            - **AppImage**: `chmod +x WhatsPulse___VERSION___amd64.AppImage && ./WhatsPulse___VERSION___amd64.AppImage`
+            - **Debian / Ubuntu**: `sudo dpkg -i WhatsPulse___VERSION___amd64.deb`
           releaseDraft: false
           prerelease: false
-          args: '--bundles deb,appimage'
+          args: '--bundles deb'
