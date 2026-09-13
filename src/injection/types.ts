@@ -25,6 +25,14 @@ export interface WhatsPulseInjectedConfig {
   customWallpaperOpacity?: number;
 }
 
+export interface DownloadResponse {
+  success: boolean;
+  file_path?: string;
+  filename: string;
+  size_bytes: number;
+  error?: string;
+}
+
 export interface WhatsPulseBridge {
   scriptFailed: (name: string, message: string) => void;
   log: (message: string) => void;
@@ -33,6 +41,9 @@ export interface WhatsPulseBridge {
   openDirectChat: () => void;
   triggerPanicMode: () => void;
   retry: () => void;
+  saveDownloadFile: (filename: string, dataBase64: string, mimeType?: string) => Promise<DownloadResponse>;
+  openDownloadFile: (path: string) => Promise<void>;
+  showInFolder: (path: string) => Promise<void>;
 }
 
 export interface WhatsPulseApi {

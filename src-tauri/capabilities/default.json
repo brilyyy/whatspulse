@@ -18,6 +18,8 @@
     "allow-open-direct-chat",
     "allow-trigger-panic-mode",
     "allow-get-autostart-status",
-    "allow-set-autostart"
+    "allow-set-autostart",
+    "allow-open-download-file",
+    "allow-show-in-folder"
   ]
 }

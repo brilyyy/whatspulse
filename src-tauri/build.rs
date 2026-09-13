@@ -21,6 +21,9 @@ fn main() {
                 "close_about",
                 "test_notification",
                 "check_for_updates",
+                "save_download_file",
+                "open_download_file",
+                "show_in_folder",
             ]),
         ),
     )

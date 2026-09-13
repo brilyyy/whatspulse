@@ -114,6 +114,23 @@ pub fn run() {
             .min_inner_size(600.0, 500.0)
             .user_agent(&user_agent)
             .initialization_script(&injection)
+            .on_download(|_webview, event| match event {
+                tauri::webview::DownloadEvent::Requested { url, destination } => {
+                    println!(
+                        "[WhatsPulse WebKit Download] Requested: {} -> {:?}",
+                        url, destination
+                    );
+                    true
+                }
+                tauri::webview::DownloadEvent::Finished { url, path, success } => {
+                    println!(
+                        "[WhatsPulse WebKit Download] Finished: {} -> {:?}, success: {}",
+                        url, path, success
+                    );
+                    true
+                }
+                _ => true,
+            })
             .visible(should_be_visible)
             .build()?;
 
@@ -199,6 +216,9 @@ pub fn run() {
             commands::trigger_panic_mode,
             commands::get_autostart_status,
             commands::set_autostart,
+            commands::save_download_file,
+            commands::open_download_file,
+            commands::show_in_folder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running WhatsPulse application");

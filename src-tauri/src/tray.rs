@@ -10,6 +10,7 @@ pub fn create_tray(
     is_dnd: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let open_item = MenuItem::with_id(app, "open_wa", "Open WhatsPulse", true, None::<&str>)?;
+    let reload_item = MenuItem::with_id(app, "reload_wa", "Reload WhatsApp", true, None::<&str>)?;
     let direct_item = MenuItem::with_id(app, "direct_chat", "Direct Chat...", true, None::<&str>)?;
     let sep1 = PredefinedMenuItem::separator(app)?;
 
@@ -18,6 +19,7 @@ pub fn create_tray(
     let sep2 = PredefinedMenuItem::separator(app)?;
 
     let settings_item = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
+    let devtools_item = MenuItem::with_id(app, "devtools", "Inspect / Debug", true, None::<&str>)?;
     let update_item = MenuItem::with_id(app, "check_update", "Check for Updates...", true, None::<&str>)?;
     let about_item = MenuItem::with_id(app, "about", "About WhatsPulse", true, None::<&str>)?;
     let sep3 = PredefinedMenuItem::separator(app)?;
@@ -26,12 +28,14 @@ pub fn create_tray(
 
     let menu = Menu::with_items(app, &[
         &open_item,
+        &reload_item,
         &direct_item,
         &sep1,
         &dnd_item,
         &panic_item,
         &sep2,
         &settings_item,
+        &devtools_item,
         &update_item,
         &about_item,
         &sep3,
@@ -59,6 +63,14 @@ pub fn create_tray(
                         let _ = window.set_focus();
                     }
                 }
+                "reload_wa" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.unminimize();
+                        let _ = window.set_focus();
+                        let _ = window.eval("window.location.reload();");
+                    }
+                }
                 "toggle" => {
                     if let Some(window) = app.get_webview_window("main") {
                         if let Ok(is_visible) = window.is_visible() {
@@ -82,6 +94,18 @@ pub fn create_tray(
                     if let Some(window) = app.get_webview_window("settings") {
                         let _ = window.show();
                         let _ = window.set_focus();
+                    }
+                }
+                "devtools" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.unminimize();
+                        let _ = window.set_focus();
+                        if window.is_devtools_open() {
+                            window.close_devtools();
+                        } else {
+                            window.open_devtools();
+                        }
                     }
                 }
                 "about" => {

@@ -6,6 +6,7 @@ import { initThemeControl } from "./modules/theme-control";
 import { initPrivacyBlur } from "./modules/privacy-blur";
 import { initNavSettings } from "./modules/nav-settings";
 import { initChatListCollapse } from "./modules/chat-list-collapse";
+import { initDownloadHandler } from "./modules/download-handler";
 import { reportScriptError } from "./ipc";
 
 (function main() {
@@ -18,6 +19,7 @@ import { reportScriptError } from "./ipc";
     initPrivacyBlur();
     initNavSettings();
     initChatListCollapse();
+    initDownloadHandler();
   } catch (err) {
     reportScriptError("main-orchestrator", err);
   }

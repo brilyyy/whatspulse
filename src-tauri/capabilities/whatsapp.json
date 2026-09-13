@@ -17,6 +17,9 @@
     "allow-retry-page",
     "allow-update-unread-count",
     "allow-show-notification",
+    "allow-save-download-file",
+    "allow-open-download-file",
+    "allow-show-in-folder",
     "opener:default"
   ]
 }
