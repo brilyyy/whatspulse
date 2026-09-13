@@ -7,10 +7,8 @@ use tauri::{
 
 pub fn create_tray(
     app: &AppHandle,
-    config: SharedConfig,
+    is_dnd: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let is_dnd = config.lock().unwrap().notifications.dnd;
-
     let open_item = MenuItem::with_id(app, "open_wa", "Open WhatsPulse", true, None::<&str>)?;
     let direct_item = MenuItem::with_id(app, "direct_chat", "Direct Chat...", true, None::<&str>)?;
     let sep1 = PredefinedMenuItem::separator(app)?;

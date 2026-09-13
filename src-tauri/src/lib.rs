@@ -20,6 +20,7 @@ pub fn run() {
     builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
         if let Some(window) = app.get_webview_window("main") {
             let _ = window.show();
+            let _ = window.unminimize();
             let _ = window.set_focus();
         }
     }));
@@ -84,12 +85,23 @@ pub fn run() {
     builder
         .manage(shared_config.clone())
         .setup(move |app| {
-            let cfg = cfg_clone_setup.lock().unwrap();
-            let injection = scripts::build_injection_bundle(&cfg);
-            let user_agent = cfg.user_agent.as_deref().unwrap_or(DEFAULT_USER_AGENT);
-
-            let is_minimized_arg = std::env::args().any(|a| a == "--minimized" || a == "-m");
-            let should_be_visible = !cfg.window.start_minimized && !is_minimized_arg;
+            let (injection, user_agent, should_be_visible, width, height, show_tray, is_dnd, check_updates_on_start) = {
+                let cfg = cfg_clone_setup.lock().unwrap();
+                let injection = scripts::build_injection_bundle(&cfg);
+                let ua = cfg.user_agent.clone().unwrap_or_else(|| DEFAULT_USER_AGENT.to_string());
+                let is_minimized_arg = std::env::args().any(|a| a == "--minimized" || a == "-m");
+                let should_be_visible = !cfg.window.start_minimized && !is_minimized_arg;
+                (
+                    injection,
+                    ua,
+                    should_be_visible,
+                    cfg.window.width,
+                    cfg.window.height,
+                    cfg.tray.show_tray,
+                    cfg.notifications.dnd,
+                    cfg.check_updates_on_start,
+                )
+            };
 
             // 1. Build Main WhatsApp Window (primary startup window)
             let main_window = WebviewWindowBuilder::new(
@@ -98,9 +110,9 @@ pub fn run() {
                 WebviewUrl::External("https://web.whatsapp.com".parse().unwrap()),
             )
             .title("WhatsPulse")
-            .inner_size(cfg.window.width, cfg.window.height)
+            .inner_size(width, height)
             .min_inner_size(600.0, 500.0)
-            .user_agent(user_agent)
+            .user_agent(&user_agent)
             .initialization_script(&injection)
             .visible(should_be_visible)
             .build()?;
@@ -132,8 +144,8 @@ pub fn run() {
             .build()?;
 
             // 4. Setup System Tray
-            if cfg.tray.show_tray {
-                tray::create_tray(app.handle(), cfg_clone_setup.clone())?;
+            if show_tray {
+                tray::create_tray(app.handle(), is_dnd)?;
             }
 
             // 5. Ensure correct startup focus: WhatsApp Web must be front and center
@@ -141,11 +153,12 @@ pub fn run() {
             let _ = about_window.hide();
             if should_be_visible {
                 let _ = main_window.show();
+                let _ = main_window.unminimize();
                 let _ = main_window.set_focus();
             }
 
             // 6. Optional background check for updates on startup
-            if cfg.check_updates_on_start {
+            if check_updates_on_start {
                 let app_handle_updater = app.handle().clone();
                 std::thread::spawn(move || {
                     std::thread::sleep(std::time::Duration::from_secs(5));
