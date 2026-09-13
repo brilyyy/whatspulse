@@ -9,13 +9,13 @@ pub fn create_tray(
     app: &AppHandle,
     _config: SharedConfig,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let open_item = MenuItem::with_id(app, "open_wa", "💬 Open WhatsApp Web", true, None::<&str>)?;
+    let open_item = MenuItem::with_id(app, "open_wa", "Open WhatsApp Web", true, None::<&str>)?;
     let toggle_item = MenuItem::with_id(app, "toggle", "Show/Hide WhatsPulse", true, None::<&str>)?;
-    let direct_item = MenuItem::with_id(app, "direct_chat", "💬 Direct Chat...", true, None::<&str>)?;
-    let panic_item = MenuItem::with_id(app, "panic", "🚨 Boss Key (Hide All)", true, None::<&str>)?;
+    let direct_item = MenuItem::with_id(app, "direct_chat", "Direct Chat...", true, None::<&str>)?;
+    let panic_item = MenuItem::with_id(app, "panic", "Boss Key (Hide All)", true, None::<&str>)?;
     let settings_item = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
-    let about_item = MenuItem::with_id(app, "about", "ℹ️ About WhatsPulse", true, None::<&str>)?;
-    let update_item = MenuItem::with_id(app, "check_update", "🔄 Check for Updates...", true, None::<&str>)?;
+    let about_item = MenuItem::with_id(app, "about", "About WhatsPulse", true, None::<&str>)?;
+    let update_item = MenuItem::with_id(app, "check_update", "Check for Updates...", true, None::<&str>)?;
     let dnd_item = MenuItem::with_id(app, "dnd", "Toggle Do Not Disturb", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit WhatsPulse", true, None::<&str>)?;
 
