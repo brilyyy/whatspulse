@@ -56,12 +56,7 @@ pub fn create_tray(app: &AppHandle, config: SharedConfig) -> Result<(), Box<dyn 
                     crate::commands::open_direct_chat(app.clone());
                 }
                 "panic" => {
-                    if let (Some(lock_state), Some(cfg_state)) = (
-                        app.try_state::<crate::lock::SharedLockManager>(),
-                        app.try_state::<crate::config::SharedConfig>(),
-                    ) {
-                        let _ = crate::commands::trigger_panic_mode(app.clone(), lock_state, cfg_state);
-                    }
+                    let _ = crate::commands::trigger_panic_mode(app.clone());
                 }
                 "settings" => {
                     if let Some(window) = app.get_webview_window("settings") {

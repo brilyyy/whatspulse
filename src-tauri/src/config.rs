@@ -234,29 +234,6 @@ impl NotificationConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LockConfig {
-    pub enabled: bool,
-    pub hash: Option<String>,
-    pub salt: Option<String>,
-    pub lock_on_start: bool,
-    pub lock_on_hide: bool,
-    pub idle_minutes: u32,
-}
-
-impl Default for LockConfig {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            hash: None,
-            salt: None,
-            lock_on_start: true,
-            lock_on_hide: false,
-            idle_minutes: 15,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DownloadsConfig {
     pub directory: Option<String>,
     pub ask_where_to_save: bool,
@@ -278,7 +255,6 @@ pub struct AppConfig {
     pub appearance: AppearanceConfig,
     pub privacy: PrivacyConfig,
     pub notifications: NotificationConfig,
-    pub lock: LockConfig,
     pub downloads: DownloadsConfig,
     pub user_agent: Option<String>,
     #[serde(default = "default_true")]
@@ -293,7 +269,6 @@ impl Default for AppConfig {
             appearance: AppearanceConfig::default(),
             privacy: PrivacyConfig::default(),
             notifications: NotificationConfig::default(),
-            lock: LockConfig::default(),
             downloads: DownloadsConfig::default(),
             user_agent: None,
             check_updates_on_start: true,

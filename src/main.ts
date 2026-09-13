@@ -53,29 +53,18 @@ interface NotificationConfig {
   custom_icon_path?: string | null;
 }
 
-interface LockConfig {
-  enabled: boolean;
-  hash: string | null;
-  salt: string | null;
-  lock_on_start: boolean;
-  lock_on_hide: boolean;
-  idle_minutes: number;
-}
-
 interface AppConfig {
   window: WindowConfig;
   tray: TrayConfig;
   appearance: AppearanceConfig;
   privacy: PrivacyConfig;
   notifications: NotificationConfig;
-  lock: LockConfig;
   user_agent: string | null;
   check_updates_on_start?: boolean;
 }
 
 declare global {
   interface Window {
-    __whatspulseShowLock?: () => void;
     __whatspulseOnShow?: (tab?: string) => void;
     __whatspulseOpenDirectChat?: () => void;
   }
@@ -351,17 +340,6 @@ async function loadSettings() {
     // Privacy
     updatePrivacyUI(cfg.privacy);
 
-    // Security
-    updateLockUI(cfg.lock.enabled);
-
-    const lockStartEl = document.getElementById("lock-on-start") as HTMLInputElement;
-    if (lockStartEl) lockStartEl.checked = cfg.lock.lock_on_start;
-
-    const lockIdleSlider = document.getElementById("lock-idle-slider") as HTMLInputElement;
-    const lockIdleMinutes = document.getElementById("lock-idle-minutes") as HTMLInputElement;
-    if (lockIdleSlider) lockIdleSlider.value = String(cfg.lock.idle_minutes);
-    if (lockIdleMinutes) lockIdleMinutes.value = String(cfg.lock.idle_minutes);
-
     // Notifications
     const notifEnabledEl = document.getElementById("notif-enabled") as HTMLInputElement;
     if (notifEnabledEl) notifEnabledEl.checked = cfg.notifications.enabled;
@@ -422,8 +400,6 @@ async function saveSettings(silent = false) {
   const showTrayEl = document.getElementById("show-tray") as HTMLInputElement;
   const trayToggleEl = document.getElementById("tray-click-toggles") as HTMLInputElement;
   const checkUpdatesStartEl = document.getElementById("check-updates-on-start") as HTMLInputElement;
-  const lockStartEl = document.getElementById("lock-on-start") as HTMLInputElement;
-  const lockIdleMinutes = document.getElementById("lock-idle-minutes") as HTMLInputElement;
   const notifEnabledEl = document.getElementById("notif-enabled") as HTMLInputElement;
   const notifDndEl = document.getElementById("notif-dnd") as HTMLInputElement;
 
@@ -472,9 +448,6 @@ async function saveSettings(silent = false) {
   if (trayToggleEl) currentConfig.tray.left_click_toggles = trayToggleEl.checked;
   if (checkUpdatesStartEl) currentConfig.check_updates_on_start = checkUpdatesStartEl.checked;
 
-  if (lockStartEl) currentConfig.lock.lock_on_start = lockStartEl.checked;
-  if (lockIdleMinutes) currentConfig.lock.idle_minutes = parseInt(lockIdleMinutes.value, 10) || 15;
-
   if (notifEnabledEl) currentConfig.notifications.enabled = notifEnabledEl.checked;
   if (notifDndEl) currentConfig.notifications.dnd = notifDndEl.checked;
 
@@ -512,35 +485,6 @@ async function saveSettings(silent = false) {
     if (!silent) showToast("Settings saved");
   } catch (err) {
     console.error("Failed to save settings:", err);
-  }
-}
-
-function updateLockUI(enabled: boolean) {
-  const lockBtn = document.getElementById("btn-configure-lock");
-  const removeBtn = document.getElementById("btn-remove-lock");
-  const lockStatusBadge = document.getElementById("lock-status-badge");
-  const lockStatusText = document.getElementById("lock-status-text");
-
-  if (enabled) {
-    if (lockBtn) lockBtn.textContent = "Change Passcode";
-    if (removeBtn) removeBtn.style.display = "inline-flex";
-    if (lockStatusBadge) {
-      lockStatusBadge.textContent = "Protected";
-      lockStatusBadge.className = "status-pill pill-active";
-    }
-    if (lockStatusText) {
-      lockStatusText.textContent = "Passcode active. Chats are securely protected by Argon2id.";
-    }
-  } else {
-    if (lockBtn) lockBtn.textContent = "Set Master Passcode";
-    if (removeBtn) removeBtn.style.display = "none";
-    if (lockStatusBadge) {
-      lockStatusBadge.textContent = "Unprotected";
-      lockStatusBadge.className = "status-pill pill-disabled";
-    }
-    if (lockStatusText) {
-      lockStatusText.textContent = "Set a passcode to lock WhatsApp chats with military-grade Argon2id hashing.";
-    }
   }
 }
 
@@ -765,25 +709,6 @@ function setupEventListeners() {
     });
   });
 
-  // Idle inactivity slider & number sync
-  const lockIdleSlider = document.getElementById("lock-idle-slider") as HTMLInputElement;
-  const lockIdleMinutes = document.getElementById("lock-idle-minutes") as HTMLInputElement;
-
-  lockIdleSlider?.addEventListener("input", () => {
-    if (lockIdleMinutes) lockIdleMinutes.value = lockIdleSlider.value;
-    if (currentConfig) currentConfig.lock.idle_minutes = parseInt(lockIdleSlider.value, 10);
-  });
-
-  lockIdleSlider?.addEventListener("change", () => {
-    saveSettings();
-  });
-
-  lockIdleMinutes?.addEventListener("change", () => {
-    if (lockIdleSlider) lockIdleSlider.value = lockIdleMinutes.value;
-    if (currentConfig) currentConfig.lock.idle_minutes = parseInt(lockIdleMinutes.value, 10);
-    saveSettings();
-  });
-
   // Auto-save toggle switches
   const toggleIds = [
     "start-minimized",
@@ -792,7 +717,6 @@ function setupEventListeners() {
     "show-tray",
     "tray-click-toggles",
     "check-updates-on-start",
-    "lock-on-start",
     "notif-enabled",
     "notif-dnd",
     "quiet-hours-toggle",
@@ -947,152 +871,6 @@ function setupEventListeners() {
     });
   });
 
-  // Passcode Setup Modal Logic
-  const modalPasscode = document.getElementById("modal-passcode");
-  const btnConfigureLock = document.getElementById("btn-configure-lock");
-  const btnRemoveLock = document.getElementById("btn-remove-lock");
-  const btnCancelPasscode = document.getElementById("btn-cancel-passcode");
-  const btnSavePasscode = document.getElementById("btn-save-passcode");
-  const modalError = document.getElementById("modal-error");
-  const modalTitle = document.getElementById("modal-title");
-  const groupCurrent = document.getElementById("group-current-passcode");
-
-  const inputCurrent = document.getElementById("input-current-passcode") as HTMLInputElement;
-  const inputNew = document.getElementById("input-new-passcode") as HTMLInputElement;
-  const inputConfirm = document.getElementById("input-confirm-passcode") as HTMLInputElement;
-
-  btnConfigureLock?.addEventListener("click", () => {
-    if (!currentConfig) return;
-    modalPasscode?.classList.add("active");
-    if (modalError) modalError.style.display = "none";
-    if (inputCurrent) inputCurrent.value = "";
-    if (inputNew) inputNew.value = "";
-    if (inputConfirm) inputConfirm.value = "";
-
-    if (currentConfig.lock.enabled) {
-      if (modalTitle) modalTitle.textContent = "Change Master Passcode";
-      if (groupCurrent) groupCurrent.style.display = "block";
-    } else {
-      if (modalTitle) modalTitle.textContent = "Set Master Passcode";
-      if (groupCurrent) groupCurrent.style.display = "none";
-    }
-    inputNew?.focus();
-  });
-
-  btnCancelPasscode?.addEventListener("click", () => {
-    modalPasscode?.classList.remove("active");
-  });
-
-  btnSavePasscode?.addEventListener("click", async () => {
-    if (!currentConfig) return;
-    const newPass = inputNew.value.trim();
-    const confirmPass = inputConfirm.value.trim();
-
-    if (newPass.length < 4) {
-      if (modalError) {
-        modalError.textContent = "Passcode must be at least 4 characters.";
-        modalError.style.display = "block";
-      }
-      return;
-    }
-
-    if (newPass !== confirmPass) {
-      if (modalError) {
-        modalError.textContent = "New passcodes do not match.";
-        modalError.style.display = "block";
-      }
-      return;
-    }
-
-    try {
-      if (currentConfig.lock.enabled && inputCurrent) {
-        const valid = await invoke<boolean>("verify_passcode", {
-          passcode: inputCurrent.value,
-        });
-        if (!valid) {
-          if (modalError) {
-            modalError.textContent = "Current passcode is incorrect.";
-            modalError.style.display = "block";
-          }
-          return;
-        }
-      }
-
-      await invoke("set_passcode", { passcode: newPass });
-      currentConfig.lock.enabled = true;
-      updateLockUI(true);
-      modalPasscode?.classList.remove("active");
-      showToast("Passcode set successfully");
-    } catch (err) {
-      if (modalError) {
-        modalError.textContent = String(err);
-        modalError.style.display = "block";
-      }
-    }
-  });
-
-  btnRemoveLock?.addEventListener("click", async () => {
-    const current = prompt("Enter current master passcode to disable protection:");
-    if (!current) return;
-
-    try {
-      await invoke("remove_passcode", { currentPasscode: current });
-      if (currentConfig) currentConfig.lock.enabled = false;
-      updateLockUI(false);
-      showToast("Passcode protection disabled");
-    } catch (err) {
-      alert("Failed to disable passcode: " + err);
-    }
-  });
-
-  // Fullscreen Lock Screen Logic
-  const lockOverlay = document.getElementById("lock-overlay");
-  const lockCardBox = document.getElementById("lock-card-box");
-  const passcodeInput = document.getElementById("passcode-input") as HTMLInputElement;
-  const btnUnlock = document.getElementById("btn-unlock");
-  const lockError = document.getElementById("lock-error");
-
-  function triggerShake() {
-    if (lockCardBox) {
-      lockCardBox.classList.remove("shake-anim");
-      void lockCardBox.offsetWidth; // trigger reflow
-      lockCardBox.classList.add("shake-anim");
-    }
-  }
-
-  async function performUnlock() {
-    if (!passcodeInput) return;
-    const pass = passcodeInput.value.trim();
-    if (!pass) return;
-
-    try {
-      const valid = await invoke<boolean>("verify_passcode", { passcode: pass });
-      if (valid) {
-        lockOverlay?.classList.remove("active");
-        passcodeInput.value = "";
-        if (lockError) lockError.style.display = "none";
-      } else {
-        triggerShake();
-        if (lockError) {
-          lockError.textContent = "Incorrect passcode. Please try again.";
-          lockError.style.display = "block";
-        }
-        passcodeInput.select();
-      }
-    } catch (err) {
-      triggerShake();
-      if (lockError) {
-        lockError.textContent = String(err);
-        lockError.style.display = "block";
-      }
-    }
-  }
-
-  btnUnlock?.addEventListener("click", performUnlock);
-  passcodeInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") performUnlock();
-  });
-
   // Direct Chat Modal Logic
   const modalDirectChat = document.getElementById("modal-direct-chat");
   const btnOpenDirectSidebar = document.getElementById("btn-open-direct-chat-sidebar");
@@ -1168,11 +946,6 @@ function setupEventListeners() {
   });
 
   // Global window functions for Tauri eval
-  window.__whatspulseShowLock = () => {
-    lockOverlay?.classList.add("active");
-    passcodeInput?.focus();
-  };
-
   window.__whatspulseOnShow = (tab = "general") => {
     const targetItem = document.querySelector(`.nav-item[data-tab="${tab}"]`) as HTMLElement;
     if (targetItem) targetItem.click();
@@ -1184,16 +957,4 @@ function setupEventListeners() {
 window.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   await loadSettings();
-
-  try {
-    const locked = await invoke<boolean>("is_locked");
-    if (locked || window.location.hash === "#lock") {
-      const lockOverlay = document.getElementById("lock-overlay");
-      lockOverlay?.classList.add("active");
-      const passcodeInput = document.getElementById("passcode-input") as HTMLInputElement;
-      passcodeInput?.focus();
-    }
-  } catch (e) {
-    console.error("Lock check error:", e);
-  }
 });

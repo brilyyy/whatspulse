@@ -1,5 +1,4 @@
 use crate::config::{AppConfig, SharedConfig};
-use crate::lock::{LockManager, SharedLockManager};
 use crate::tray::update_tray_badge;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, State};
@@ -233,67 +232,6 @@ pub fn save_settings(
     Ok(())
 }
 
-#[tauri::command]
-pub fn is_locked(lock_state: State<'_, SharedLockManager>) -> bool {
-    lock_state.lock().unwrap().is_locked
-}
-
-#[tauri::command]
-pub fn verify_passcode(
-    app: AppHandle,
-    config: State<'_, SharedConfig>,
-    lock_state: State<'_, SharedLockManager>,
-    passcode: String,
-) -> bool {
-    let cfg = config.lock().unwrap();
-    if let Some(ref hash) = cfg.lock.hash {
-        let valid = LockManager::verify_passcode(&passcode, hash);
-        if valid {
-            let mut state = lock_state.lock().unwrap();
-            state.is_locked = false;
-            state.record_activity();
-
-            if let Some(main_win) = app.get_webview_window("main") {
-                let _ = main_win.show();
-                let _ = main_win.set_focus();
-            }
-            if let Some(settings_win) = app.get_webview_window("settings") {
-                let _ = settings_win.hide();
-            }
-        }
-        valid
-    } else {
-        true
-    }
-}
-
-#[tauri::command]
-pub fn set_passcode(config: State<'_, SharedConfig>, passcode: String) -> Result<(), String> {
-    let hash = LockManager::hash_passcode(&passcode)?;
-    let mut cfg = config.lock().unwrap();
-    cfg.lock.enabled = true;
-    cfg.lock.hash = Some(hash);
-    cfg.save();
-    Ok(())
-}
-
-#[tauri::command]
-pub fn remove_passcode(
-    config: State<'_, SharedConfig>,
-    current_passcode: String,
-) -> Result<(), String> {
-    let mut cfg = config.lock().unwrap();
-    if let Some(ref hash) = cfg.lock.hash {
-        if !LockManager::verify_passcode(&current_passcode, hash) {
-            return Err("Invalid passcode".to_string());
-        }
-    }
-    cfg.lock.enabled = false;
-    cfg.lock.hash = None;
-    cfg.save();
-    Ok(())
-}
-
 pub fn clean_phone_number(input: &str) -> String {
     let mut digits: String = input.chars().filter(|c| c.is_ascii_digit()).collect();
     if digits.starts_with('0') {
@@ -361,10 +299,8 @@ pub fn open_direct_chat(app: AppHandle) {
 #[tauri::command]
 pub fn trigger_panic_mode(
     app: AppHandle,
-    lock_state: State<'_, SharedLockManager>,
-    config: State<'_, SharedConfig>,
 ) -> Result<(), String> {
-    // 1. Hide both windows immediately
+    // 1. Hide windows immediately
     if let Some(main_win) = app.get_webview_window("main") {
         let _ = main_win.hide();
         let js = r#"
@@ -382,12 +318,8 @@ pub fn trigger_panic_mode(
     if let Some(settings_win) = app.get_webview_window("settings") {
         let _ = settings_win.hide();
     }
-
-    // 2. Lock state immediately if passcode is enabled
-    let cfg = config.lock().unwrap();
-    if cfg.lock.enabled {
-        let mut state = lock_state.lock().unwrap();
-        state.is_locked = true;
+    if let Some(about_win) = app.get_webview_window("about") {
+        let _ = about_win.hide();
     }
 
     Ok(())
