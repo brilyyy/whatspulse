@@ -29,6 +29,56 @@ pub fn run() {
     builder = builder.plugin(tauri_plugin_dialog::init());
     builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
 
+    // Centralized window close handling
+    let shared_config_close = shared_config.clone();
+    builder = builder.on_window_event(move |window, event| {
+        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            match window.label() {
+                "main" => {
+                    let cfg = shared_config_close.lock().unwrap();
+                    if cfg.window.close_to_tray {
+                        api.prevent_close();
+                        let w = window.clone();
+                        let _ = window.hide();
+                        std::thread::spawn(move || {
+                            std::thread::sleep(std::time::Duration::from_millis(25));
+                            let _ = w.hide();
+                        });
+                    }
+                }
+                "settings" => {
+                    api.prevent_close();
+                    let w = window.clone();
+                    let _ = window.hide();
+                    std::thread::spawn(move || {
+                        std::thread::sleep(std::time::Duration::from_millis(25));
+                        let _ = w.hide();
+                    });
+                    if let Some(main_win) = window.app_handle().get_webview_window("main") {
+                        let _ = main_win.show();
+                        let _ = main_win.unminimize();
+                        let _ = main_win.set_focus();
+                    }
+                }
+                "about" => {
+                    api.prevent_close();
+                    let w = window.clone();
+                    let _ = window.hide();
+                    std::thread::spawn(move || {
+                        std::thread::sleep(std::time::Duration::from_millis(25));
+                        let _ = w.hide();
+                    });
+                    if let Some(main_win) = window.app_handle().get_webview_window("main") {
+                        let _ = main_win.show();
+                        let _ = main_win.unminimize();
+                        let _ = main_win.set_focus();
+                    }
+                }
+                _ => {}
+            }
+        }
+    });
+
     let cfg_clone_setup = shared_config.clone();
 
     builder
@@ -55,19 +105,6 @@ pub fn run() {
             .visible(should_be_visible)
             .build()?;
 
-            // Intercept window close to minimize to tray if configured
-            let cfg_close = cfg_clone_setup.clone();
-            let main_win_hide = main_window.clone();
-            main_window.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    let c = cfg_close.lock().unwrap();
-                    if c.window.close_to_tray {
-                        api.prevent_close();
-                        let _ = main_win_hide.hide();
-                    }
-                }
-            });
-
             // 2. Build Settings Window (hidden until opened)
             let settings_window = WebviewWindowBuilder::new(
                 app,
@@ -79,14 +116,6 @@ pub fn run() {
             .min_inner_size(620.0, 480.0)
             .visible(false)
             .build()?;
-
-            let settings_win_hide = settings_window.clone();
-            settings_window.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    let _ = settings_win_hide.hide();
-                }
-            });
 
             // 3. Build About Window (dedicated standalone window)
             let about_window = WebviewWindowBuilder::new(
@@ -101,14 +130,6 @@ pub fn run() {
             .visible(false)
             .center()
             .build()?;
-
-            let about_win_hide = about_window.clone();
-            about_window.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    let _ = about_win_hide.hide();
-                }
-            });
 
             // 4. Setup System Tray
             if cfg.tray.show_tray {
@@ -156,6 +177,7 @@ pub fn run() {
             commands::show_notification,
             commands::test_notification,
             commands::open_about,
+            commands::close_about,
             commands::check_for_updates,
             commands::get_settings,
             commands::save_settings,

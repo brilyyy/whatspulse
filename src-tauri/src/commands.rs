@@ -36,6 +36,23 @@ pub fn close_settings(app: AppHandle) {
     if let Some(settings_win) = app.get_webview_window("settings") {
         let _ = settings_win.hide();
     }
+    if let Some(main_win) = app.get_webview_window("main") {
+        let _ = main_win.show();
+        let _ = main_win.unminimize();
+        let _ = main_win.set_focus();
+    }
+}
+
+#[tauri::command]
+pub fn close_about(app: AppHandle) {
+    if let Some(about_win) = app.get_webview_window("about") {
+        let _ = about_win.hide();
+    }
+    if let Some(main_win) = app.get_webview_window("main") {
+        let _ = main_win.show();
+        let _ = main_win.unminimize();
+        let _ = main_win.set_focus();
+    }
 }
 
 #[tauri::command]

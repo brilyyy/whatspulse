@@ -264,6 +264,7 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 32px 40px;
+  position: relative;
 }
 
 .tab-pane {
@@ -1605,6 +1606,46 @@ body {
   background: rgba(0, 230, 153, 0.18);
   border-color: var(--emerald);
   box-shadow: 0 0 14px var(--emerald-glow);
+  transform: translateY(-1px);
+}
+
+.sidebar-close-btn {
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ff6b6b;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.2);
+}
+
+.viewport-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.viewport-close-btn:hover {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #ff6b6b;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.25);
   transform: translateY(-1px);
 }
 

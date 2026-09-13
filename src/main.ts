@@ -927,6 +927,21 @@ function setupEventListeners() {
     if (e.key === "Enter") submitDirectChat();
   });
 
+  // Close Settings (via buttons or Escape key)
+  const btnCloseSettings = document.getElementById("btn-close-settings");
+  const btnCloseSettingsTop = document.getElementById("btn-close-settings-top");
+
+  async function closeSettingsWindow() {
+    try {
+      await invoke("close_settings");
+    } catch (e) {
+      console.error("Failed to close settings window:", e);
+    }
+  }
+
+  btnCloseSettings?.addEventListener("click", closeSettingsWindow);
+  btnCloseSettingsTop?.addEventListener("click", closeSettingsWindow);
+
   // Boss Key / Emergency Panic
   const btnTriggerPanic = document.getElementById("btn-trigger-panic");
   async function triggerPanic() {
@@ -939,6 +954,14 @@ function setupEventListeners() {
   btnTriggerPanic?.addEventListener("click", triggerPanic);
 
   window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (modalDirectChat?.classList.contains("active")) {
+        closeDirectChatModal();
+      } else {
+        closeSettingsWindow();
+      }
+      return;
+    }
     if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "X" || e.key === "x"))) {
       e.preventDefault();
       triggerPanic();

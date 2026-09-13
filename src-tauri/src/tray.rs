@@ -1,11 +1,15 @@
+use crate::config::SharedConfig;
 use tauri::{
     menu::{Menu, MenuItem},
-    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
-use crate::config::SharedConfig;
 
-pub fn create_tray(app: &AppHandle, config: SharedConfig) -> Result<(), Box<dyn std::error::Error>> {
+pub fn create_tray(
+    app: &AppHandle,
+    _config: SharedConfig,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let open_item = MenuItem::with_id(app, "open_wa", "💬 Open WhatsApp Web", true, None::<&str>)?;
     let toggle_item = MenuItem::with_id(app, "toggle", "Show/Hide WhatsPulse", true, None::<&str>)?;
     let direct_item = MenuItem::with_id(app, "direct_chat", "💬 Direct Chat...", true, None::<&str>)?;
     let panic_item = MenuItem::with_id(app, "panic", "🚨 Boss Key (Hide All)", true, None::<&str>)?;
@@ -16,6 +20,7 @@ pub fn create_tray(app: &AppHandle, config: SharedConfig) -> Result<(), Box<dyn 
     let quit_item = MenuItem::with_id(app, "quit", "Quit WhatsPulse", true, None::<&str>)?;
 
     let menu = Menu::with_items(app, &[
+        &open_item,
         &toggle_item,
         &direct_item,
         &panic_item,
@@ -40,6 +45,13 @@ pub fn create_tray(app: &AppHandle, config: SharedConfig) -> Result<(), Box<dyn 
     let _tray = builder
         .on_menu_event(|app, event| {
             match event.id.as_ref() {
+                "open_wa" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.unminimize();
+                        let _ = window.set_focus();
+                    }
+                }
                 "toggle" => {
                     if let Some(window) = app.get_webview_window("main") {
                         if let Ok(is_visible) = window.is_visible() {
@@ -47,6 +59,7 @@ pub fn create_tray(app: &AppHandle, config: SharedConfig) -> Result<(), Box<dyn 
                                 let _ = window.hide();
                             } else {
                                 let _ = window.show();
+                                let _ = window.unminimize();
                                 let _ = window.set_focus();
                             }
                         }
@@ -84,30 +97,24 @@ pub fn create_tray(app: &AppHandle, config: SharedConfig) -> Result<(), Box<dyn 
                 _ => {}
             }
         })
-        .on_tray_icon_event({
-            let config = config.clone();
-            move |tray, event| {
-                if let TrayIconEvent::Click {
+        .on_tray_icon_event(|tray, event| {
+            match event {
+                TrayIconEvent::Click {
                     button: MouseButton::Left,
-                    button_state: MouseButtonState::Up,
                     ..
-                } = event
-                {
-                    let cfg = config.lock().unwrap();
-                    if cfg.tray.left_click_toggles {
-                        let app = tray.app_handle();
-                        if let Some(window) = app.get_webview_window("main") {
-                            if let Ok(is_visible) = window.is_visible() {
-                                if is_visible {
-                                    let _ = window.hide();
-                                } else {
-                                    let _ = window.show();
-                                    let _ = window.set_focus();
-                                }
-                            }
-                        }
+                }
+                | TrayIconEvent::DoubleClick {
+                    button: MouseButton::Left,
+                    ..
+                } => {
+                    let app = tray.app_handle();
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.unminimize();
+                        let _ = window.set_focus();
                     }
                 }
+                _ => {}
             }
         })
         .build(app)?;

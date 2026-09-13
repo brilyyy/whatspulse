@@ -20,6 +20,7 @@
         overflow: hidden;
       }
       .about-container {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -27,6 +28,28 @@
         padding: 32px 28px 24px;
         height: 100vh;
         box-sizing: border-box;
+      }
+      .close-icon-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #8b949e;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        z-index: 10;
+      }
+      .close-icon-btn:hover {
+        background: rgba(239, 68, 68, 0.18);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #ff6b6b;
       }
       .about-logo-wrapper {
         position: relative;
@@ -150,6 +173,13 @@
   </head>
   <body>
     <div class="about-container">
+      <button type="button" class="close-icon-btn" id="btn-close-about" title="Close (Esc)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
       <div class="about-logo-wrapper">
         <div class="about-glow"></div>
         <img src="/src/assets/icon.png" alt="WhatsPulse Logo" class="about-logo-img" />
@@ -189,6 +219,23 @@
       const invoke = window.__TAURI__ ? window.__TAURI__.core.invoke : null;
       const opener = window.__TAURI__ ? window.__TAURI__.opener : null;
 
+      function doClose() {
+        if (invoke) {
+          invoke("close_about");
+        } else {
+          window.close();
+        }
+      }
+
+      document.getElementById("btn-close-about")?.addEventListener("click", doClose);
+      document.getElementById("link-close")?.addEventListener("click", doClose);
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          doClose();
+        }
+      });
+
       const updateStatusEl = document.getElementById("update-status");
       const btnCheckUpdate = document.getElementById("btn-check-update");
 
@@ -227,14 +274,6 @@
       document.getElementById("link-releases")?.addEventListener("click", () => {
         if (opener) opener.openUrl("https://github.com/brilyyy/whatspulse/releases");
         else window.open("https://github.com/brilyyy/whatspulse/releases", "_blank");
-      });
-
-      document.getElementById("link-close")?.addEventListener("click", () => {
-        if (window.__TAURI__ && window.__TAURI__.window) {
-          window.__TAURI__.window.getCurrentWindow().hide();
-        } else {
-          window.close();
-        }
       });
     </script>
   </body>

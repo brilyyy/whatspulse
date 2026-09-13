@@ -18,6 +18,7 @@ fn main() {
                 "get_autostart_status",
                 "set_autostart",
                 "open_about",
+                "close_about",
                 "test_notification",
                 "check_for_updates",
             ]),
