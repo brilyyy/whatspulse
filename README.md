@@ -44,7 +44,7 @@ pnpm tauri dev
 ```bash
 pnpm tauri build
 ```
-The output binary (`whatspulse`) and `.deb` installer (`WhatsPulse_1.1.0_amd64.deb`) will be located in `src-tauri/target/release/bundle/`. Once installed, you can launch it via terminal using:
+The output binary (`whatspulse`) and `.deb` installer (`WhatsPulse_2.0.0_amd64.deb`) will be located in `src-tauri/target/release/bundle/`. Once installed, you can launch it via terminal using:
 ```bash
 whatspulse
 ```
