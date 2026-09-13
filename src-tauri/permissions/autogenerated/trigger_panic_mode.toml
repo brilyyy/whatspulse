@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-trigger-panic-mode"
+description = "Enables the trigger_panic_mode command without any pre-configured scope."
+commands.allow = ["trigger_panic_mode"]
+
+[[permission]]
+identifier = "deny-trigger-panic-mode"
+description = "Denies the trigger_panic_mode command without any pre-configured scope."
+commands.deny = ["trigger_panic_mode"]

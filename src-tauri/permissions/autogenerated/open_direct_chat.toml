@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-direct-chat"
+description = "Enables the open_direct_chat command without any pre-configured scope."
+commands.allow = ["open_direct_chat"]
+
+[[permission]]
+identifier = "deny-open-direct-chat"
+description = "Denies the open_direct_chat command without any pre-configured scope."
+commands.deny = ["open_direct_chat"]

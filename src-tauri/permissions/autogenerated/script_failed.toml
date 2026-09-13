@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-script-failed"
+description = "Enables the script_failed command without any pre-configured scope."
+commands.allow = ["script_failed"]
+
+[[permission]]
+identifier = "deny-script-failed"
+description = "Denies the script_failed command without any pre-configured scope."
+commands.deny = ["script_failed"]

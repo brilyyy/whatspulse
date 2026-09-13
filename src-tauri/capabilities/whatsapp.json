@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "whatsapp",
+  "description": "Permissions for WhatsApp Web remote window",
+  "windows": ["main"],
+  "remote": {
+    "urls": [
+      "https://web.whatsapp.com",
+      "https://web.whatsapp.com/*"
+    ]
+  },
+  "permissions": [
+    "allow-client-log",
+    "allow-script-failed",
+    "allow-connection-changed",
+    "allow-open-settings",
+    "allow-retry-page",
+    "allow-update-unread-count",
+    "allow-show-notification",
+    "opener:default"
+  ]
+}

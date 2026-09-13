@@ -1,0 +1,31 @@
+fn main() {
+    tauri_build::try_build(
+        tauri_build::Attributes::new().app_manifest(
+            tauri_build::AppManifest::new().commands(&[
+                "client_log",
+                "script_failed",
+                "connection_changed",
+                "open_settings",
+                "close_settings",
+                "retry_page",
+                "update_unread_count",
+                "show_notification",
+                "get_settings",
+                "save_settings",
+                "is_locked",
+                "verify_passcode",
+                "set_passcode",
+                "remove_passcode",
+                "direct_chat",
+                "open_direct_chat",
+                "trigger_panic_mode",
+                "get_autostart_status",
+                "set_autostart",
+                "open_about",
+                "test_notification",
+                "check_for_updates",
+            ]),
+        ),
+    )
+    .expect("failed to run tauri-build");
+}

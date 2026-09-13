@@ -1,0 +1,26 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions for WhatsPulse settings and lock UI",
+  "windows": ["settings", "about"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "dialog:default",
+    "allow-get-settings",
+    "allow-save-settings",
+    "allow-is-locked",
+    "allow-verify-passcode",
+    "allow-set-passcode",
+    "allow-remove-passcode",
+    "allow-close-settings",
+    "allow-open-about",
+    "allow-test-notification",
+    "allow-check-for-updates",
+    "allow-direct-chat",
+    "allow-open-direct-chat",
+    "allow-trigger-panic-mode",
+    "allow-get-autostart-status",
+    "allow-set-autostart"
+  ]
+}

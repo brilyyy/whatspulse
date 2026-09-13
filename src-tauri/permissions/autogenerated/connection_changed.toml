@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-connection-changed"
+description = "Enables the connection_changed command without any pre-configured scope."
+commands.allow = ["connection_changed"]
+
+[[permission]]
+identifier = "deny-connection-changed"
+description = "Denies the connection_changed command without any pre-configured scope."
+commands.deny = ["connection_changed"]
