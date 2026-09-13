@@ -1,11 +1,12 @@
 {
   "name": "whatspulse",
   "private": true,
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build:injection": "vite build --config vite.injection.config.ts",
+    "build": "tsc && pnpm build:injection && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "distribute": "tauri build"

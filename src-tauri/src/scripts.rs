@@ -1,5 +1,6 @@
 use crate::config::AppConfig;
 
+#[cfg(test)]
 fn strip_comments_and_empty_lines(raw: &str) -> String {
     raw.lines()
         .map(|l| l.trim())
@@ -9,14 +10,7 @@ fn strip_comments_and_empty_lines(raw: &str) -> String {
 }
 
 pub fn build_injection_bundle(config: &AppConfig) -> String {
-    let bootstrap_js = strip_comments_and_empty_lines(include_str!("scripts/bootstrap.js"));
-    let storage_persist_js = strip_comments_and_empty_lines(include_str!("scripts/storage-persist.js"));
-    let sw_recovery_js = strip_comments_and_empty_lines(include_str!("scripts/sw-recovery.js"));
-    let connection_js = strip_comments_and_empty_lines(include_str!("scripts/connection-watchdog.js"));
-    let theme_js = strip_comments_and_empty_lines(include_str!("scripts/theme-control.js"));
-    let blur_js = strip_comments_and_empty_lines(include_str!("scripts/privacy-blur.js"));
-    let nav_js = strip_comments_and_empty_lines(include_str!("scripts/nav-settings.js"));
-    let collapse_js = strip_comments_and_empty_lines(include_str!("scripts/chat-list-collapse.js"));
+    let injection_bundle = include_str!("scripts/injection.bundle.js");
 
     let config_json = serde_json::json!({
         "colorScheme": config.appearance.theme,
@@ -28,17 +22,7 @@ pub fn build_injection_bundle(config: &AppConfig) -> String {
         "customWallpaperOpacity": config.appearance.custom_wallpaper_opacity,
     });
 
-    format!(
-        r#"window.__whatspulseConfig={config_json};
-{bootstrap_js}
-{storage_persist_js}
-{sw_recovery_js}
-{connection_js}
-{theme_js}
-{blur_js}
-{nav_js}
-{collapse_js}"#
-    )
+    format!("window.__whatspulseConfig={config_json};\n{injection_bundle}")
 }
 
 #[cfg(test)]
