@@ -1,6 +1,6 @@
 [package]
 name = "whatspulse"
-version = "2.0.0"
+version = "2.0.1"
 description = "WhatsPulse — Modern & lightweight WhatsApp Web desktop client built with Rust and Tauri v2"
 authors = ["v0idbr"]
 edition = "2021"
