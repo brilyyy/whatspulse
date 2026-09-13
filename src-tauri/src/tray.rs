@@ -1,33 +1,42 @@
 use crate::config::SharedConfig;
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
 
 pub fn create_tray(
     app: &AppHandle,
-    _config: SharedConfig,
+    config: SharedConfig,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let open_item = MenuItem::with_id(app, "open_wa", "Open WhatsApp Web", true, None::<&str>)?;
-    let toggle_item = MenuItem::with_id(app, "toggle", "Show/Hide WhatsPulse", true, None::<&str>)?;
+    let is_dnd = config.lock().unwrap().notifications.dnd;
+
+    let open_item = MenuItem::with_id(app, "open_wa", "Open WhatsPulse", true, None::<&str>)?;
     let direct_item = MenuItem::with_id(app, "direct_chat", "Direct Chat...", true, None::<&str>)?;
+    let sep1 = PredefinedMenuItem::separator(app)?;
+
+    let dnd_item = CheckMenuItem::with_id(app, "dnd", "Do Not Disturb", true, is_dnd, None::<&str>)?;
     let panic_item = MenuItem::with_id(app, "panic", "Boss Key (Hide All)", true, None::<&str>)?;
+    let sep2 = PredefinedMenuItem::separator(app)?;
+
     let settings_item = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
-    let about_item = MenuItem::with_id(app, "about", "About WhatsPulse", true, None::<&str>)?;
     let update_item = MenuItem::with_id(app, "check_update", "Check for Updates...", true, None::<&str>)?;
-    let dnd_item = MenuItem::with_id(app, "dnd", "Toggle Do Not Disturb", true, None::<&str>)?;
+    let about_item = MenuItem::with_id(app, "about", "About WhatsPulse", true, None::<&str>)?;
+    let sep3 = PredefinedMenuItem::separator(app)?;
+
     let quit_item = MenuItem::with_id(app, "quit", "Quit WhatsPulse", true, None::<&str>)?;
 
     let menu = Menu::with_items(app, &[
         &open_item,
-        &toggle_item,
         &direct_item,
-        &panic_item,
-        &settings_item,
-        &about_item,
-        &update_item,
+        &sep1,
         &dnd_item,
+        &panic_item,
+        &sep2,
+        &settings_item,
+        &update_item,
+        &about_item,
+        &sep3,
         &quit_item,
     ])?;
 
